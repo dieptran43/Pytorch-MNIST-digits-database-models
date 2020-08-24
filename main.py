@@ -79,4 +79,3 @@ if plot_loss is True:
 
 if save_model is True:
 	 torch.save(net.state_dict(), 'MNIST_model.pt')
-
