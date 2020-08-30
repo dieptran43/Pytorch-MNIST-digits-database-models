@@ -23,5 +23,6 @@ class CnnNet(nn.Module):
     x = self.fc1(x) 
     x = self.dropout(x)
 
-    prediction = self.fc2(x) 
+    prediction = self.fc2(x)
 
+    return prediction

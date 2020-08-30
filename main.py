@@ -9,6 +9,7 @@ from models import *
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
+print("LOADING DATA...")
 trainset = torchvision.datasets.MNIST(root='./data', train=True,
 										download=True, transform=transforms.ToTensor())
 trainloader = torch.utils.data.DataLoader(trainset, batch_size=100,
@@ -17,8 +18,17 @@ testset = torchvision.datasets.MNIST(root="./data", train=False,
 										download=True, transform=transforms.ToTensor())
 testloader = torch.utils.data.DataLoader(testset, batch_size=100,
 											shuffle=True, num_workers=2)
+print("DATA LOADED")
 
-net = CnnNet().to(device)
+fully_connected = True
+cnn = False
+
+if fully_connected:
+	net = FullyConnectedNet().to(device)
+	print("Using fully connected")
+if cnn:
+	net = CnnNet().to(device)
+	print("Using cnn")
 
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.SGD(net.parameters(), lr=0.001)
@@ -28,11 +38,14 @@ total_step = len(trainloader)
 loss_values = []
 
 def train():
+	print("starting train process")
 	for epoch in range(num_epochs):
 		running_loss = 0
 		for i, (inputs, labels) in enumerate(trainloader):
-			#inputs, labels = inputs.reshape(-1, 28*28).to(device), labels.to(device)
-			inputs, labels = inputs.to(device), labels.to(device)
+			if fully_connected:
+				inputs, labels = inputs.reshape(-1, 28*28).to(device), labels.to(device) 
+			if cnn:
+				inputs, labels = inputs.to(device), labels.to(device)
 
 			optimizer.zero_grad()
 
@@ -50,11 +63,15 @@ def train():
 		loss_values.append(running_loss / total_step)
 
 def test():
+	print("starting test process")
 	with torch.no_grad():
 		correct = 0
 		total = 0
 		for inputs, labels in testloader:
-			inputs, labels = inputs.reshape(-1, 28*28).to(device), labels.to(device)
+			if fully_connected:
+				inputs, labels = inputs.reshape(-1, 28*28).to(device), labels.to(device)
+			if cnn:
+				inputs, labels = inputs.to(device), labels.to(device)
 
 			output = net(inputs)
 
@@ -74,6 +91,8 @@ if test_train is True:
 
 if plot_loss is True:
 	plt.plot(loss_values)
+	plt.ylabel("loss")
+	plt.xlabel("epoch")
 	plt.show()
 
 if save_model is True:
