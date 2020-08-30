@@ -1,9 +1,9 @@
 import torch
 import torch.nn as nn
 
-class Net(nn.Module):
+class FullyConnectedNet(nn.Module):
 	def __init__(self):
-		super(Net, self).__init__()
+		super().__init__()
 		self.fc1 = nn.Linear(784, 800)
 		self.relu = nn.ReLU()
 		self.fc2 = nn.Linear(800, 1600)

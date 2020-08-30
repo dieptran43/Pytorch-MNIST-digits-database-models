@@ -18,7 +18,7 @@ testset = torchvision.datasets.MNIST(root="./data", train=False,
 testloader = torch.utils.data.DataLoader(testset, batch_size=100,
 											shuffle=True, num_workers=2)
 
-net = Net().to(device)
+net = CnnNet().to(device)
 
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.SGD(net.parameters(), lr=0.001)
@@ -31,11 +31,12 @@ def train():
 	for epoch in range(num_epochs):
 		running_loss = 0
 		for i, (inputs, labels) in enumerate(trainloader):
-			inputs, labels = inputs.reshape(-1, 28*28).to(device), labels.to(device)
+			#inputs, labels = inputs.reshape(-1, 28*28).to(device), labels.to(device)
+			inputs, labels = inputs.to(device), labels.to(device)
 
 			optimizer.zero_grad()
 
-			output = net(inputs)
+			output= net(inputs)
 			loss = criterion(output, labels)
 			
 			loss.backward()
@@ -62,8 +63,6 @@ def test():
 			correct += (predicted == labels).sum().item()
 
 		print('Accuracy: {} %'.format(100 * correct / total))
-
-
 
 test_train = True
 plot_loss = True
