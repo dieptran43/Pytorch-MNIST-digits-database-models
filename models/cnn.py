@@ -7,7 +7,7 @@ class CnnNet(nn.Module):
     self.conv1 = nn.Conv2d(in_channels=1, out_channels=32, kernel_size=3, padding=1)  
     self.conv2 = nn.Conv2d(in_channels=32, out_channels=64, kernel_size=3, padding=1) 
     self.pool = nn.MaxPool2d(2,2)
-    self.fc1 = nn.Linear(64*7*7, 128) # it is 64....
+    self.fc1 = nn.Linear(64*7*7, 128) 
     self.fc2 = nn.Linear(128, 10)
     self.dropout = torch.nn.Dropout(p=0.5)
     self.relu = torch.nn.ReLU()
