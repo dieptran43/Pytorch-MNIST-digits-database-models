@@ -4,12 +4,44 @@ import torchvision.transforms as transforms
 import torch.nn as nn
 import torch.optim as optim
 import matplotlib.pyplot as plt
-
 from models import *
+import argparse
 
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+parser = argparse.ArgumentParser()
+parser.add_argument('-c', '--cuda', action='store_true', 
+    help="train on gpu")
+parser.add_argument('-u', '--cpu', action='store_true',
+	help="train on cpu")
+parser.add_argument('-l', '--linear', action='store_true',
+	help="use fully connected layers")
+parser.add_argument('-n', '--cnn', action= 'store_true',
+	help="use cnn")
+parser.add_argument('-t', '--train', action='store_true',
+	help="train and test model")
+parser.add_argument('-p', '--plot', action='store_true',
+	help="plot loss and epoch")
+parser.add_argument('-s', '--save', action='store_true',
+	help="save model")
 
-print("LOADING DATA...")
+args = parser.parse_args()
+
+if args.cuda:
+    device = torch.device('cuda')
+    print('Using device:', device)
+    print('GPU:', torch.cuda.get_device_name(0))
+if args.cpu:
+	device = torch.device('cpu')
+	print("USING CPU")
+if args.linear:
+	net = FullyConnectedNet().to(device)
+	print("//USING FULLY CONNECTED LAYERS//")
+if args.cnn:
+	net = CnnNet().to(device)
+	print("//using cnn//")
+
+
+print("*"*40, "LOADING DATA", "*"*40)
+
 trainset = torchvision.datasets.MNIST(root='./data', train=True,
 										download=True, transform=transforms.ToTensor())
 trainloader = torch.utils.data.DataLoader(trainset, batch_size=100,
@@ -18,17 +50,7 @@ testset = torchvision.datasets.MNIST(root="./data", train=False,
 										download=True, transform=transforms.ToTensor())
 testloader = torch.utils.data.DataLoader(testset, batch_size=100,
 											shuffle=True, num_workers=2)
-print("DATA LOADED")
-
-fully_connected = True
-cnn = False
-
-if fully_connected:
-	net = FullyConnectedNet().to(device)
-	print("Using fully connected")
-if cnn:
-	net = CnnNet().to(device)
-	print("Using cnn")
+print("="*40, "DATA LOADED", "="*40)
 
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.SGD(net.parameters(), lr=0.001)
@@ -38,13 +60,13 @@ total_step = len(trainloader)
 loss_values = []
 
 def train():
-	print("starting train process")
+	print("TRAINING")
 	for epoch in range(num_epochs):
 		running_loss = 0
 		for i, (inputs, labels) in enumerate(trainloader):
-			if fully_connected:
+			if args.linear:
 				inputs, labels = inputs.reshape(-1, 28*28).to(device), labels.to(device) 
-			if cnn:
+			if args.cnn:
 				inputs, labels = inputs.to(device), labels.to(device)
 
 			optimizer.zero_grad()
@@ -63,14 +85,14 @@ def train():
 		loss_values.append(running_loss / total_step)
 
 def test():
-	print("starting test process")
+	print("TESTING")
 	with torch.no_grad():
 		correct = 0
 		total = 0
 		for inputs, labels in testloader:
-			if fully_connected:
+			if args.linear:
 				inputs, labels = inputs.reshape(-1, 28*28).to(device), labels.to(device)
-			if cnn:
+			if args.cnn:
 				inputs, labels = inputs.to(device), labels.to(device)
 
 			output = net(inputs)
@@ -81,19 +103,13 @@ def test():
 
 		print('Accuracy: {} %'.format(100 * correct / total))
 
-test_train = True
-plot_loss = True
-save_model = False
-
-if test_train is True:
+if args.train:
 	train()
 	test()
-
-if plot_loss is True:
+if args.plot:
 	plt.plot(loss_values)
 	plt.ylabel("loss")
 	plt.xlabel("epoch")
 	plt.show()
-
-if save_model is True:
-	 torch.save(net.state_dict(), 'MNIST_model.pt')
+if args.save:
+	torch.save(net.state_dict(), 'MNIST_model.pt')
